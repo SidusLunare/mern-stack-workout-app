@@ -5,18 +5,14 @@ import mongoose from "mongoose";
 // GET alle workouts
 export const getAllWorkouts = async (req, res) => {
   try {
-    // 1. Haal alle workouts op
-    // 2. Sorteer: nieuwste eerst
-    const workouts = await Workout.find({}).sort({ createdAt: -1 });
-
-    // 3. Stuur terug
+    const workouts = await Workout.find({ userId: req.user._id }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(workouts);
   } catch (error) {
-    // 4. Als fout, stuur error
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Server error" });
   }
 };
-
 // GET één workout op basis van ID
 export const getWorkoutById = async (req, res) => {
   // 1. Haal ID uit URL
@@ -45,17 +41,17 @@ export const getWorkoutById = async (req, res) => {
 
 // POST nieuwe workout
 export const createWorkout = async (req, res) => {
-  // 1. Haal data uit request
   const { title, reps, load } = req.body;
 
   try {
-    // 2. Maak workout in database
-    const workout = await Workout.create({ title, reps, load });
-
-    // 3. Stuur terug
+    const workout = await Workout.create({
+      title,
+      reps,
+      load,
+      userId: req.user._id,
+    });
     res.status(201).json(workout);
   } catch (error) {
-    // 4. Validatie fout? (bijv. title vergeten)
     res.status(400).json({ error: error.message });
   }
 };
@@ -64,14 +60,13 @@ export const createWorkout = async (req, res) => {
 export const updateWorkout = async (req, res) => {
   const { id } = req.params;
 
-  // Check of ID geldig is
   if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: "Ongeldige workout ID" });
+    return res.status(400).json({ error: "Geen geldige workout ID" });
   }
 
   try {
-    const workout = await Workout.findByIdAndUpdate(
-      id,
+    const workout = await Workout.findOneAndUpdate(
+      { _id: id, userId: req.user._id },
       { ...req.body },
       { new: true },
     );
@@ -82,7 +77,7 @@ export const updateWorkout = async (req, res) => {
 
     res.status(200).json(workout);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
@@ -90,13 +85,15 @@ export const updateWorkout = async (req, res) => {
 export const deleteWorkout = async (req, res) => {
   const { id } = req.params;
 
-  // Check of ID geldig is
   if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: "Ongeldige workout ID" });
+    return res.status(400).json({ error: "Geen geldige workout ID" });
   }
 
   try {
-    const workout = await Workout.findByIdAndDelete(id);
+    const workout = await Workout.findOneAndDelete({
+      _id: id,
+      userId: req.user._id,
+    });
 
     if (!workout) {
       return res.status(404).json({ error: "Workout niet gevonden" });
@@ -104,6 +101,6 @@ export const deleteWorkout = async (req, res) => {
 
     res.status(200).json(workout);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Server error" });
   }
 };
