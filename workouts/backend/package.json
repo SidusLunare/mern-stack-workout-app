@@ -13,7 +13,7 @@
     "express",
     "mongodb"
   ],
-  "author": "Jouw Naam",
+  "author": "Nova",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.6",
