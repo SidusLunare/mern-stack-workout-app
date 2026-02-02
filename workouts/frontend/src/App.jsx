@@ -1,18 +1,44 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function App() {
+function App({ onLogout }) {
   const [workouts, setWorkouts] = useState([]);
   const [title, setTitle] = useState("");
   const [reps, setReps] = useState("");
   const [load, setLoad] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    console.log("Uitgelogd");
+    onLogout();
+    navigate("/login");
+  };
 
   // READ - Haal alle workouts op
   useEffect(() => {
     const fetchWorkouts = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.log("Niet ingelogd");
+        return;
+      }
+
       try {
-        const response = await fetch("http://localhost:4000/api/workouts");
+        const response = await fetch("http://localhost:4000/api/workouts", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         const data = await response.json();
-        setWorkouts(data);
+
+        if (response.ok) {
+          setWorkouts(data);
+        } else {
+          console.error(data.error);
+        }
       } catch (error) {
         console.error("Error:", error);
       }
@@ -70,7 +96,18 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Workouts</h1>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h1>Workouts</h1>
+        <button onClick={handleLogout} style={{ padding: "10px 20px" }}>
+          Uitloggen
+        </button>
+      </div>
 
       {/* CREATE Form */}
       <form onSubmit={handleSubmit}>
