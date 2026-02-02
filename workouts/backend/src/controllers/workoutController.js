@@ -24,7 +24,7 @@ export const getWorkoutById = async (req, res) => {
 
   // 2. Check of ID geldig is (24 tekens, juiste format)
   if (!mongoose.isValidObjectId(id)) {
-    return res.status(400).json({ error: 'Ongeldige workout ID' });
+    return res.status(400).json({ error: "Ongeldige workout ID" });
   }
 
   try {
@@ -33,7 +33,7 @@ export const getWorkoutById = async (req, res) => {
 
     // 4. Bestaat niet? Stuur 404
     if (!workout) {
-      return res.status(404).json({ error: 'Workout niet gevonden' });
+      return res.status(404).json({ error: "Workout niet gevonden" });
     }
 
     // 5. Gevonden? Stuur terug!
@@ -51,11 +51,59 @@ export const createWorkout = async (req, res) => {
   try {
     // 2. Maak workout in database
     const workout = await Workout.create({ title, reps, load });
-    
+
     // 3. Stuur terug
     res.status(201).json(workout);
   } catch (error) {
     // 4. Validatie fout? (bijv. title vergeten)
     res.status(400).json({ error: error.message });
+  }
+};
+
+// PATCH workout (aanpassen)
+export const updateWorkout = async (req, res) => {
+  const { id } = req.params;
+
+  // Check of ID geldig is
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: "Ongeldige workout ID" });
+  }
+
+  try {
+    const workout = await Workout.findByIdAndUpdate(
+      id,
+      { ...req.body },
+      { new: true },
+    );
+
+    if (!workout) {
+      return res.status(404).json({ error: "Workout niet gevonden" });
+    }
+
+    res.status(200).json(workout);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// DELETE workout (verwijderen)
+export const deleteWorkout = async (req, res) => {
+  const { id } = req.params;
+
+  // Check of ID geldig is
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: "Ongeldige workout ID" });
+  }
+
+  try {
+    const workout = await Workout.findByIdAndDelete(id);
+
+    if (!workout) {
+      return res.status(404).json({ error: "Workout niet gevonden" });
+    }
+
+    res.status(200).json(workout);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
