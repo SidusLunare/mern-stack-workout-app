@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import workoutRoutes from "./src/routes/workoutRoutes.js";
-import authRoutes from "./src/routes/authRoutes.js"; // Nieuw!
+import workoutRoutes from "../backend/src/routes/workoutRoutes.js";
+import authRoutes from "../backend/src/routes/authRoutes.js"; // Nieuw!
 
 const app = express();
 
